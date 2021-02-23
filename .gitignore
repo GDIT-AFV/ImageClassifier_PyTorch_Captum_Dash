@@ -1,0 +1,4 @@
+flower_photos/
+.ipynb_checkpoints/
+*.pth
+flower_photos.tar.gz
