@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 
+import cv2
 import PIL.Image as Image
 from io import BytesIO
 import base64
@@ -31,6 +32,11 @@ preprocess = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
+
+inv_normalize = transforms.Normalize(
+   mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+   std=[1/0.229, 1/0.224, 1/0.225]
+)
 
 app.layout = html.Div([
     html.Div([
@@ -71,8 +77,14 @@ def parse_contents(contents, filename, date):
 
 
     img = preprocess(image)
+    original_image = inv_normalize(img)
+    original_image1 = np.transpose(original_image.squeeze().detach().numpy(), (1,2,0))
+    #htmlimg = cv2.cvtColor(original_image1, cv2.COLOR_RGB2BGR)
+    #_, buffer = cv2.imencode('.jpg', img)
+    #htmlimg = base64.b64encode(buffer).decode('utf-8')
+    htmlimg = Image.fromarray((original_image1 * 255).astype(np.uint8))
+    #ret, htmlimg = cv2.imencode('.jpg',img.numpy())
     img = img.unsqueeze(0)
-    
     pred = model(img)
 
     print(pred.detach().numpy())
@@ -82,7 +94,7 @@ def parse_contents(contents, filename, date):
     return html.Div([
         # HTML images accept base64 encoded strings in the same format
         # that is supplied by the upload
-        html.Img(src=contents, style={"height": "300px" }),
+        html.Img(src=htmlimg),
         html.Hr(),
         generate_table(df.sort_values(['probability'], ascending=[False]))
     ])
