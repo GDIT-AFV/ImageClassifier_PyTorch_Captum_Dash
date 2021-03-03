@@ -5,7 +5,6 @@ from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 
-import cv2
 import PIL.Image as Image
 from io import BytesIO
 import base64
@@ -79,11 +78,7 @@ def parse_contents(contents, filename, date):
     img = preprocess(image)
     original_image = inv_normalize(img)
     original_image1 = np.transpose(original_image.squeeze().detach().numpy(), (1,2,0))
-    #htmlimg = cv2.cvtColor(original_image1, cv2.COLOR_RGB2BGR)
-    #_, buffer = cv2.imencode('.jpg', img)
-    #htmlimg = base64.b64encode(buffer).decode('utf-8')
     htmlimg = Image.fromarray((original_image1 * 255).astype(np.uint8))
-    #ret, htmlimg = cv2.imencode('.jpg',img.numpy())
     img = img.unsqueeze(0)
     pred = model(img)
 
